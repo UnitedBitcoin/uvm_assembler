@@ -9,5 +9,7 @@
 /pkg
 /src/main/debug
 /test1.out
+/result.ass
+/result.out
 /uvm_ass.exe
 /tags

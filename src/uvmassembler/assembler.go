@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+	"log"
 )
 
 // OperandTypes
@@ -568,7 +569,7 @@ func (assembler *Assembler) parseConstant(line string, lineLen int, id *int) (bo
 	if strings.Index(line, ";") >= 0 {
 		line = line[:strings.Index(line, ";")]
 	}
-	cf := strings.ToLower(line[c : c+1])[0]
+	cf := strings.ToLower(line[c:c+1])[0]
 	cfStr := string(cf)
 	lineBytes := []byte(line)
 
@@ -1034,7 +1035,7 @@ var opinfos = [][]OpInfo{ // Maximum of 3 operands
 	{{OPP_Ax, LIMIT_CONST_STACK}}, // PUSH
 	{{OPP_A, LIMIT_STACKIDX}},     // POP
 	{{OPP_A, LIMIT_STACKIDX}},     // GETTOP
-	{{OPP_Ax, LIMIT_EMBED}}}                                                           // EXTRAARG
+	{{OPP_Ax, LIMIT_EMBED}}} // EXTRAARG
 
 const ParseOperandDefaultLimit = 0xFFFFFFFF
 
@@ -1135,9 +1136,10 @@ func (assembler *Assembler) ParseOperand(operand *Operand, line string, limit in
 			if !parseRes {
 				return false, 0, "parse label error " + line
 			}
-			if u, ok := assembler.usedSubroutines[label]; ok && u != assembler.funcid {
-				return false, 0, "used subproutine " + label
-			}
+			// FIXME
+			//if u, ok := assembler.usedSubroutines[label]; ok && u != assembler.funcid {
+			//	return false, 0, "used subproutine " + label
+			//}
 			bend += cpos
 			_, subroutineFound := assembler.subroutines[label]
 			operand.value = -1
@@ -1686,9 +1688,12 @@ func (assembler *Assembler) ParseAsmContent(asmContent string, outFilepath strin
 		if len(line) < 1 {
 			continue
 		}
+		if i==662 {
+			log.Print("") // FIXME
+		}
 		res, ParseLineError := assembler.ParseLine(line, len(line))
 		if !res {
-			panic(ParseLineError)
+			panic("L:" + strconv.Itoa(i+1) + ": " + ParseLineError)
 		}
 	}
 	if len(assembler.instructions) > 0 {
