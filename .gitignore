@@ -1,0 +1,13 @@
+/.idea
+/*.iml
+/build
+/dist
+/out
+/logs
+/*.log
+/.vscode
+/pkg
+/src/main/debug
+/test1.out
+/uvm_ass.exe
+/tags
