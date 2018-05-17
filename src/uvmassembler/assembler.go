@@ -844,9 +844,15 @@ const (
 	OP_VARARG = 45 /*	A B	R(A), R(A+1), ..., R(A+B-2) = vararg		*/
 
 	OP_EXTRAARG = 46 /*	Ax	extra (larger) argument for previous opcode	*/
+
+	UOP_PUSH   = 47 /* A   top++, evalstack(top) = R(A)  */
+	UOP_POP    = 48 /* A   R(A) := evalstack(top), top-- */
+	UOP_GETTOP = 49 /* A   R(A) := evalstack(top) */
+	UOP_CMP    = 50 /* A B C   R(A) = 1 if RK(B) > RK(C), 0 if RK(B) == RK(C), -1 if RK(B) < RK(C) */
+
 )
 
-const NUM_OPCODES = int(OP_EXTRAARG) + 1
+const NUM_OPCODES = int(UOP_CMP) + 1
 
 const (
 	LIMIT_STACKIDX    = 1
@@ -906,12 +912,13 @@ var luaPOpnames = []string{
 	"closure",
 	"vararg",
 
-	//add 
+	"extraarg",
+
 	"push",
 	"pop",
 	"gettop",
+	"cmp",
 
-	"extraarg",
 	""}
 
 // count of parameters for each instruction
@@ -962,7 +969,12 @@ var opcounts = []int{
 	3, // SETLIST
 	2, // CLOSURE
 	2, // VARARG
-	1} // EXTRAARG
+	1, // EXTRAARG
+	1, // PUSH
+	1, // POP
+	1, // GETTOP
+	3} // CMP
+
 
 // OpPos
 const (
@@ -1031,11 +1043,12 @@ var opinfos = [][]OpInfo{ // Maximum of 3 operands
 	{{OPP_A, LIMIT_STACKIDX}, {OPP_Bx, LIMIT_PROTO}},                                  // CLOSURE
 	{{OPP_A, LIMIT_STACKIDX}, {OPP_Bx, LIMIT_EMBED}},                                  // VARARG
 
-	//add 
+	{{OPP_Ax, LIMIT_EMBED}}, // EXTRAARG
+
 	{{OPP_Ax, LIMIT_CONST_STACK}}, // PUSH
 	{{OPP_A, LIMIT_STACKIDX}},     // POP
 	{{OPP_A, LIMIT_STACKIDX}},     // GETTOP
-	{{OPP_Ax, LIMIT_EMBED}}} // EXTRAARG
+	{{OPP_A, LIMIT_EMBED}, {OPP_B, LIMIT_CONST_STACK}, {OPP_C, LIMIT_CONST_STACK}}} // CMP
 
 const ParseOperandDefaultLimit = 0xFFFFFFFF
 
@@ -1688,7 +1701,7 @@ func (assembler *Assembler) ParseAsmContent(asmContent string, outFilepath strin
 		if len(line) < 1 {
 			continue
 		}
-		if i==662 {
+		if i == 662 {
 			log.Print("") // FIXME
 		}
 		res, ParseLineError := assembler.ParseLine(line, len(line))
