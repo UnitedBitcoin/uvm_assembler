@@ -1045,7 +1045,7 @@ var opinfos = [][]OpInfo{ // Maximum of 3 operands
 
 	{{OPP_Ax, LIMIT_EMBED}}, // EXTRAARG
 
-	{{OPP_Ax, LIMIT_CONST_STACK}}, // PUSH
+	{{OPP_A, LIMIT_STACKIDX}}, // PUSH
 	{{OPP_A, LIMIT_STACKIDX}},     // POP
 	{{OPP_A, LIMIT_STACKIDX}},     // GETTOP
 	{{OPP_A, LIMIT_EMBED}, {OPP_B, LIMIT_CONST_STACK}, {OPP_C, LIMIT_CONST_STACK}}} // CMP
