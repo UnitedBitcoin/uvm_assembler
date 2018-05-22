@@ -84,5 +84,9 @@ Pseudo-assembly Syntax of uvm
   SETLIST Set a range of array elements for a table
   CLOSURE Create a closure of a function prototype
   VARARG Assign vararg function arguments to registers
+  PUSH push register value to evaluation stack
+  POP pop top value in evaluation stack to register
+  GETTOP get top value in evaluation stack to register
+  CMP R(A) = 1 if RK(B) > RK(C), 0 if RK(B) == RK(C), -1 if RK(B) < RK(C) */
 
 ```

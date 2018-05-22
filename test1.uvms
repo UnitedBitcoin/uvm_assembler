@@ -43,7 +43,7 @@
 
 
 .begin_upvalue
-   0 0
+   0 0 "ddd"
 .end_upvalue
 
 
