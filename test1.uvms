@@ -6,6 +6,9 @@
    "asd"
    "Hello\nabc"
    " world!"
+   1
+   2
+   3
 .end_const
 
 
@@ -26,8 +29,11 @@
    loadk %4 const "test"
    push %4
    gettop %3
+
+   cmp_eq %4 const 2 const 3
+
    gettabup %2 @0 const "print"
-   call %2 2 1
+   call %2 3 1
 
    return %0 1
 .end_code

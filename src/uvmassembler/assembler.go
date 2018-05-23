@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
-	"log"
 )
 
 // OperandTypes
@@ -982,6 +981,7 @@ func (assembler *Assembler) parseCode(line string, lineLen int) (bool, string) {
 		var op Operand
 		res, bend, err := assembler.ParseOperand(&op, remainingLine, info[i].limit)
 		if !res {
+			assembler.ParseOperand(&op, remainingLine, info[i].limit)
 			return false, "invalid operand(s) " + err + " in line " + line
 		}
 		remainingLine = Trim(remainingLine[bend:])
@@ -1426,9 +1426,6 @@ func (assembler *Assembler) ParseAsmContent(asmContent string, outFilepath strin
 		line = strings.Trim(lines[i], "\r\n")
 		if len(line) < 1 {
 			continue
-		}
-		if i == 662 {
-			log.Print("") // FIXME
 		}
 		res, ParseLineError := assembler.ParseLine(line, len(line))
 		if !res {

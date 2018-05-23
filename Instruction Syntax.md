@@ -87,6 +87,10 @@ Pseudo-assembly Syntax of uvm
   PUSH push register value to evaluation stack
   POP pop top value in evaluation stack to register
   GETTOP get top value in evaluation stack to register
-  CMP R(A) = 1 if RK(B) > RK(C), 0 if RK(B) == RK(C), -1 if RK(B) < RK(C) */
+  CMP R(A) = 1 if RK(B) > RK(C), 0 if RK(B) == RK(C), -1 if RK(B) < RK(C)
+  CMP_EQ R(A) = 1 if RK(B) == RK(C), else 0
+  CMP_NE R(A) = 1 if RK(B) != RK(C), else 0
+  CMP_GT R(A) = 1 if RK(B) > RK(C), else 0
+  CMP_LT R(A) = 1 if RK(B) < RK(C), else 0
 
 ```

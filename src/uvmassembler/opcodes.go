@@ -74,9 +74,14 @@ const (
 	UOP_GETTOP = 49 /* A   R(A) := evalstack(top) */
 	UOP_CMP    = 50 /* A B C   R(A) = 1 if RK(B) > RK(C), 0 if RK(B) == RK(C), -1 if RK(B) < RK(C) */
 
+	UOP_CMP_EQ = 51 /* A B C R(A) = 1 if RK(B) == RK(C), else 0 */
+	UOP_CMP_NE = 52 /* A B C R(A) = 1 if RK(B) != RK(C), else 0 */
+	UOP_CMP_GT = 53 /* A B C R(A) = 1 if RK(B) > RK(C), else 0 */
+	UOP_CMP_LT = 54 /* A B C R(A) = 1 if RK(B) < RK(C), else 0 */
+
 )
 
-const NUM_OPCODES = int(UOP_CMP) + 1
+const NUM_OPCODES = int(UOP_CMP_LT) + 1
 
 var UvmPOpnames = []string{
 	"move",
@@ -133,6 +138,12 @@ var UvmPOpnames = []string{
 	"gettop",
 	"cmp",
 
+	"cmp_eq",
+	"cmp_ne",
+	"cmp_gt",
+	"cmp_lt",
+
+
 	""}
 
 // count of parameters for each instruction
@@ -187,7 +198,12 @@ var Opcounts = []int{
 	1, // PUSH
 	1, // POP
 	1, // GETTOP
-	3} // CMP
+	3, // CMP
+	3, // CMP_EQ
+	3, // CMP_NE
+	3, // CMP_GT
+	3, // CMP_LT
+}
 
 const (
 	LIMIT_STACKIDX    = 1
@@ -271,4 +287,10 @@ var Opinfos = [][]OpInfo{ // Maximum of 3 operands
 	{{OPP_A, LIMIT_STACKIDX}}, // PUSH
 	{{OPP_A, LIMIT_STACKIDX}}, // POP
 	{{OPP_A, LIMIT_STACKIDX}}, // GETTOP
-	{{OPP_A, LIMIT_EMBED}, {OPP_B, LIMIT_CONST_STACK}, {OPP_C, LIMIT_CONST_STACK}}} // CMP
+	{{OPP_A, LIMIT_STACKIDX}, {OPP_B, LIMIT_CONST_STACK}, {OPP_C, LIMIT_CONST_STACK}}, // CMP
+
+	{{OPP_A, LIMIT_STACKIDX}, {OPP_B, LIMIT_CONST_STACK}, {OPP_C, LIMIT_CONST_STACK}}, // CMP_EQ
+	{{OPP_A, LIMIT_STACKIDX}, {OPP_B, LIMIT_CONST_STACK}, {OPP_C, LIMIT_CONST_STACK}}, // CMP_NE
+	{{OPP_A, LIMIT_STACKIDX}, {OPP_B, LIMIT_CONST_STACK}, {OPP_C, LIMIT_CONST_STACK}}, // CMP_GT
+	{{OPP_A, LIMIT_STACKIDX}, {OPP_B, LIMIT_CONST_STACK}, {OPP_C, LIMIT_CONST_STACK}}, // CMP_LT
+}
