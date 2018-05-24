@@ -61,6 +61,7 @@
    setlist %1 0 1
    loadk %2 const ","
    call %0 3 2
+   cmp %20 %18 %19 ;L247;;    LCM
    closure %1 subroutine_3
    move %2 %1
    gettabup %3 @0 const "print" ; debug name: _ENV

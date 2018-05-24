@@ -474,16 +474,17 @@ func (assembler *Assembler) parseDirective(line string, lineLen int) (bool, stri
 		if assembler.parseStatus != PARSE_FUNC && assembler.parseStatus != PARSE_NONE {
 			return false, "func declaration cannot be inside a code or const segment"
 		}
-		//if len(assembler.instructions) > 0 {
 		// even empty func can finalize
 		finalizeFuncRes, err := assembler.finalizeFunction()
 		if !finalizeFuncRes {
 			return false, err
 		}
-		//}
 		parseRes, _, funcname := ParseLabel(argsAfterDirectiveName, 0, len(argsAfterDirectiveName))
 		if !parseRes {
 			return false, "parse funcname error"
+		}
+		if funcname == "gjavac_test_kotlin_TokenContract__init" {
+			fmt.Print("")
 		}
 		assembler.funcname = strings.Trim(funcname, " ")
 		argsAfterDirectiveName = strings.Trim(argsAfterDirectiveName[len(funcname):], " ")
@@ -981,7 +982,6 @@ func (assembler *Assembler) parseCode(line string, lineLen int) (bool, string) {
 		var op Operand
 		res, bend, err := assembler.ParseOperand(&op, remainingLine, info[i].limit)
 		if !res {
-			assembler.ParseOperand(&op, remainingLine, info[i].limit)
 			return false, "invalid operand(s) " + err + " in line " + line
 		}
 		remainingLine = Trim(remainingLine[bend:])

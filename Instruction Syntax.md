@@ -20,7 +20,7 @@ Pseudo-assembly Syntax of uvm
 
 ```
   .begin_upvalue
-     1 0
+     1 0 optional upvalue name
   .end_upvalue
 ```
 
