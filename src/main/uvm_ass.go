@@ -41,6 +41,7 @@ import (
 
 func main() {
 	argsNum := len(os.Args)
+
 	if argsNum == 2 { //.uvm -> .out
 		arg := os.Args[1]
 		if arg != "-h" && arg != "-help" {

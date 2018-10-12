@@ -182,7 +182,7 @@ type ParsedFunction struct {
 	linedefined       uint
 	lastlinedefined   uint
 	//add locals
-	locals 	          []LocVar
+	locals []LocVar
 }
 
 // ParseStates
@@ -568,7 +568,7 @@ func (assembler *Assembler) parseConstant(line string, lineLen int, id *int) (bo
 	if strings.Index(line, ";") >= 0 {
 		line = line[:strings.Index(line, ";")]
 	}
-	cf := strings.ToLower(line[c:c+1])[0]
+	cf := strings.ToLower(line[c : c+1])[0]
 	cfStr := string(cf)
 	lineBytes := []byte(line)
 
@@ -1268,7 +1268,11 @@ func (assembler *Assembler) writeHeader() (bool, string) {
 func (assembler *Assembler) writeFunction(fn *ParsedFunction) (bool, string) {
 	wBuffer := assembler.wBuffer
 	//fmt.Printf("proto name: %s\n", fn.name)
-	if BufferWriteString(wBuffer, fn.name) != nil {
+	funcname := fn.name
+	if strings.HasSuffix(funcname, "fake") {
+		funcname = ""
+	}
+	if BufferWriteString(wBuffer, funcname) != nil {
 		return false, "write proto name error"
 	}
 	linedefined, lastlinedefined := 0, 0
@@ -1343,11 +1347,19 @@ func (assembler *Assembler) writeFunction(fn *ParsedFunction) (bool, string) {
 	}
 	for i := 0; i < len(fn.constants); i++ {
 		constantValue := *fn.constants[i]
-		if BufferWriteInt8(wBuffer, uint8(constantValue.valueType())) != nil {
+		valtype := constantValue.valueType()
+
+		if valtype == LUA_TSTRING && len([]byte(constantValue.str())) > LUAI_MAXSHORTLEN {
+			valtype = LUA_TLNGSTR
+		}
+		if BufferWriteInt8(wBuffer, uint8(valtype)) != nil {
 			return false, "write constant value type error " + constantValue.str()
 		}
 		switch constantValue.valueType() {
 		case LUA_TNIL:
+			{
+				continue
+			}
 		case LUA_TSTRING:
 			strVal, _ := constantValue.(*TString)
 			if BufferWriteString(wBuffer, strVal.string_value) != nil {
@@ -1475,7 +1487,10 @@ func (assembler *Assembler) ParseAsmContent(asmContent string, outFilepath strin
 	}
 	mainFn, ok := assembler.functions["main"]
 	if !ok {
-		panic("no main function")
+		mainFn, ok = assembler.functions["main_fake"]
+		if !ok {
+			panic("no main function")
+		}
 	}
 
 	if ok, err := assembler.writeFunction(mainFn); !ok {

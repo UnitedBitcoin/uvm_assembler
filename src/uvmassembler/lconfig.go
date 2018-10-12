@@ -30,6 +30,8 @@ const (
 	LUA_INTEGER_TYPE_SIZE = 8
 	// lua_Number类型的长度
 	LUA_NUMBER_TYPE_SIZE = 8
+
+	LUAI_MAXSHORTLEN = 40
 )
 
 // lua types

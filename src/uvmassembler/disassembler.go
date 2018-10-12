@@ -473,9 +473,9 @@ func (disassembler *DisAssembler) LoadFunc(pf *ParsedFunction, parent *ParsedFun
 	name := disassembler.LoadString()
 	if name == "" {
 		if parent == nil {
-			name = "main"
+			name = "main_fake"
 		} else {
-			name = parent.name + "_" + strconv.Itoa(idx)
+			name = parent.name + "_" + strconv.Itoa(idx) + "_fake"
 		}
 	}
 
