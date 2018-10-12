@@ -179,6 +179,8 @@ type ParsedFunction struct {
 	maxstacksize      uint
 	params            uint
 	vararg            uint
+	linedefined       uint
+	lastlinedefined   uint
 	//add locals
 	locals 	          []LocVar
 }
@@ -483,9 +485,6 @@ func (assembler *Assembler) parseDirective(line string, lineLen int) (bool, stri
 		if !parseRes {
 			return false, "parse funcname error"
 		}
-		if funcname == "gjavac_test_kotlin_TokenContract__init" {
-			fmt.Print("")
-		}
 		assembler.funcname = strings.Trim(funcname, " ")
 		argsAfterDirectiveName = strings.Trim(argsAfterDirectiveName[len(funcname):], " ")
 
@@ -579,6 +578,16 @@ func (assembler *Assembler) parseConstant(line string, lineLen int, id *int) (bo
 	// TODO: read next value or using tokenizer to parse line tokens
 	if cfStr == "\"" { // parse string
 		var strVal string
+		if len(line) < 2 {
+			return false, bend, "truncated constant value " + line
+		}
+		constend := strings.Index(line[1:], "\"")
+
+		if constend < 0 {
+			return false, bend, "truncated constant value " + line
+		}
+
+		line = line[:(constend + 2)]
 		unquoted, ok := strconv.Unquote(line) // process escaped chars
 		if ok != nil {
 			return false, 0, "unquote string error in line " + line
@@ -1060,10 +1069,11 @@ func (assembler *Assembler) parseUpvalue(line string, lineLen int) (bool, string
 		cpos = spos + cpos
 		res, nc, varname := ParseStr(line, cpos, end)
 		if res { //find str
-
-			isValid, errmsg := CheckName(varname)
-			if !isValid {
-				return false, errmsg
+			if varname != "_ENV" {
+				isValid, errmsg := CheckName(varname)
+				if !isValid {
+					return false, errmsg
+				}
 			}
 			name = varname
 			cpos = nc
@@ -1082,8 +1092,11 @@ func (assembler *Assembler) parseUpvalue(line string, lineLen int) (bool, string
 			}
 		}
 
-	} else if spos == 0 {
-		return false, "invalid upvalue:" + line
+	} else {
+		if cpos < end && line[cpos] != ';' {
+			return false, "invalid upvalue:" + line
+		}
+
 	}
 
 	var upvalue Upvalue
@@ -1094,7 +1107,7 @@ func (assembler *Assembler) parseUpvalue(line string, lineLen int) (bool, string
 	return true, ""
 }
 
-//add parse local func
+//add parse local func>>>>>>>>>>>>>>>>>
 func (assembler *Assembler) parseLocal(line string, lineLen int) (bool, string) {
 	cpos := strings.IndexFunc(line, func(c rune) bool {
 		return !unicode.IsSpace(c)
@@ -1109,10 +1122,10 @@ func (assembler *Assembler) parseLocal(line string, lineLen int) (bool, string) 
 		return false, "could not parse local varname " + line[cpos:end]
 	}
 
-	isValid, errmsg := CheckName(name)
-	if !isValid {
-		return false, errmsg
-	}
+	//	isValid, errmsg := CheckName(name)
+	//	if !isValid {
+	//		return false, errmsg
+	//	}
 	cpos = nc
 	cpos = strings.IndexFunc(line[cpos:], func(c rune) bool {
 		return !unicode.IsSpace(c)
@@ -1263,6 +1276,16 @@ func (assembler *Assembler) writeFunction(fn *ParsedFunction) (bool, string) {
 	if lines > 0 {
 		linedefined = fn.lineinfos[0]
 		lastlinedefined = fn.lineinfos[lines-1]
+		for i := 0; i < lines; i++ {
+			if fn.lineinfos[i] < linedefined {
+				linedefined = fn.lineinfos[i]
+			}
+
+			if fn.lineinfos[i] > lastlinedefined {
+				lastlinedefined = fn.lineinfos[i]
+			}
+		}
+
 	}
 	//  linedefined, maybe use first instruction's linenumber or use .begin_code directive's linenumber comment
 	if BufferWriteUInt32(wBuffer, uint32(linedefined)) != nil {
@@ -1324,6 +1347,7 @@ func (assembler *Assembler) writeFunction(fn *ParsedFunction) (bool, string) {
 			return false, "write constant value type error " + constantValue.str()
 		}
 		switch constantValue.valueType() {
+		case LUA_TNIL:
 		case LUA_TSTRING:
 			strVal, _ := constantValue.(*TString)
 			if BufferWriteString(wBuffer, strVal.string_value) != nil {
@@ -1350,7 +1374,7 @@ func (assembler *Assembler) writeFunction(fn *ParsedFunction) (bool, string) {
 				return false, "write constant value error " + constantValue.str()
 			}
 		default:
-			return false, "unknown constant value type " + string(constantValue.valueType())
+			return false, "unknown constant value type " + strconv.Itoa(constantValue.valueType())
 		}
 	}
 
