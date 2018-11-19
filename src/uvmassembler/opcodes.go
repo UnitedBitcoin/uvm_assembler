@@ -79,9 +79,13 @@ const (
 	UOP_CMP_GT = 53 /* A B C R(A) = 1 if RK(B) > RK(C), else 0 */
 	UOP_CMP_LT = 54 /* A B C R(A) = 1 if RK(B) < RK(C), else 0 */
 
+	UOP_CCALL       = 55 /* A B C  R(A), ... ,R(A+C-2) := CALL CONTRACT:R(A)  API:R(A+1)(ARGS: R(A+2),...R(A+B))*/
+	UOP_CSTATICCALL = 56 /* A B C  R(A), ... ,R(A+C-2) := CALL CONTRACT:R(A)  API:R(A+1)(ARGS: R(A+2),...R(A+B))*/
+
+	UOP_END = 57
 )
 
-const NUM_OPCODES = int(UOP_CMP_LT) + 1
+const NUM_OPCODES = int(UOP_END)
 
 var UvmPOpnames = []string{
 	"move",
@@ -142,7 +146,8 @@ var UvmPOpnames = []string{
 	"cmp_ne",
 	"cmp_gt",
 	"cmp_lt",
-
+	"ccall",
+	"cstaticcall",
 
 	""}
 
@@ -203,6 +208,9 @@ var Opcounts = []int{
 	3, // CMP_NE
 	3, // CMP_GT
 	3, // CMP_LT
+
+	3, //CCALL
+	3, //CSTATIC
 }
 
 const (
@@ -284,13 +292,16 @@ var Opinfos = [][]OpInfo{ // Maximum of 3 operands
 
 	{{OPP_Ax, LIMIT_EMBED}}, // EXTRAARG
 
-	{{OPP_A, LIMIT_STACKIDX}}, // PUSH
-	{{OPP_A, LIMIT_STACKIDX}}, // POP
-	{{OPP_A, LIMIT_STACKIDX}}, // GETTOP
+	{{OPP_A, LIMIT_STACKIDX}},                                                         // PUSH
+	{{OPP_A, LIMIT_STACKIDX}},                                                         // POP
+	{{OPP_A, LIMIT_STACKIDX}},                                                         // GETTOP
 	{{OPP_A, LIMIT_STACKIDX}, {OPP_B, LIMIT_CONST_STACK}, {OPP_C, LIMIT_CONST_STACK}}, // CMP
 
 	{{OPP_A, LIMIT_STACKIDX}, {OPP_B, LIMIT_CONST_STACK}, {OPP_C, LIMIT_CONST_STACK}}, // CMP_EQ
 	{{OPP_A, LIMIT_STACKIDX}, {OPP_B, LIMIT_CONST_STACK}, {OPP_C, LIMIT_CONST_STACK}}, // CMP_NE
 	{{OPP_A, LIMIT_STACKIDX}, {OPP_B, LIMIT_CONST_STACK}, {OPP_C, LIMIT_CONST_STACK}}, // CMP_GT
 	{{OPP_A, LIMIT_STACKIDX}, {OPP_B, LIMIT_CONST_STACK}, {OPP_C, LIMIT_CONST_STACK}}, // CMP_LT
+
+	{{OPP_A, LIMIT_STACKIDX}, {OPP_B, LIMIT_EMBED}, {OPP_C, LIMIT_EMBED}}, // CCALL
+	{{OPP_A, LIMIT_STACKIDX}, {OPP_B, LIMIT_EMBED}, {OPP_C, LIMIT_EMBED}}, // CSTATICCALL
 }
